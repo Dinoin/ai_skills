@@ -4,11 +4,9 @@
 
 ## 自動同步機制
 
-每次執行 `git push` 後，git `post-push` hook 會自動呼叫 `sync-skills.bat`，將根目錄層的所有 skill 資料夾（排除 `.github`、`.git`）同步至：
+每次執行 `git push` 後，git `post-push` hook 會自動呼叫 `sync-skills.bat`，將根目錄層的所有 skill 資料夾（排除 `.github`、`.git`）同步至目標資料夾。
+設置於 `.git/hooks/pre-push` 中。
 
-```
-C:\Users\Dinoin_Chen\.copilot\skills\
-```
 
 **同步範圍**
 

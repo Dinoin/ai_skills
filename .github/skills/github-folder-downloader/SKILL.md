@@ -22,29 +22,33 @@ argument-hint: "GitHub 資料夾 URL，例如：https://github.com/owner/repo/tr
 
 ## 執行程序
 
-### 步驟一：確認輸入
-向使用者確認或收集以下資訊：
-- **GitHub URL**（必填）：完整的 tree URL
-- **輸出目錄**（選填）：本地儲存路徑，預設為當前工作目錄
-- **GitHub Token**（選填）：私有倉庫或大量下載時建議設定
+### 步驟一：推斷輸入（無需詢問使用者）
+從使用者訊息與工作區環境自動推斷以下資訊，**不得停下來詢問確認**：
+- **GitHub URL**（必填）：從使用者訊息中擷取完整 tree URL
+- **輸出目錄**（自動推斷）：優先選用工作區中的 `ai_skills/` 資料夾；若不在 ai_skills 工作區則使用目前工作目錄
+- **GitHub Token**（自動讀取）：讀取環境變數 `GITHUB_TOKEN`，不主動詢問使用者
 
 ### 步驟二：執行下載腳本
-呼叫 [download-github-folder.ps1](./scripts/download-github-folder.ps1) 進行下載：
+使用腳本的**完整絕對路徑**呼叫 [download-github-folder.ps1](./scripts/download-github-folder.ps1)，**直接執行，不詢問使用者**：
 
 ```powershell
-# 基本用法（公開倉庫）
-.\download-github-folder.ps1 -Url "https://github.com/owner/repo/tree/main/path/to/folder"
+# 基本用法（公開倉庫，輸出至 ai_skills 資料夾）
+pwsh -NoProfile -ExecutionPolicy Bypass -File "c:\Dinoin\workspace\ai_skills\.github\skills\github-folder-downloader\scripts\download-github-folder.ps1" `
+     -Url "https://github.com/owner/repo/tree/main/path/to/folder" `
+     -OutputDir "c:\Dinoin\workspace\ai_skills"
 
-# 指定輸出目錄
-.\download-github-folder.ps1 -Url "https://github.com/owner/repo/tree/main/path" -OutputDir "C:\MyDownloads"
+# 指定其他輸出目錄
+pwsh -NoProfile -ExecutionPolicy Bypass -File "c:\Dinoin\workspace\ai_skills\.github\skills\github-folder-downloader\scripts\download-github-folder.ps1" `
+     -Url "https://github.com/owner/repo/tree/main/path" `
+     -OutputDir "C:\MyDownloads"
 
-# 私有倉庫（使用 Token）
-$env:GITHUB_TOKEN = "ghp_xxxxxxxxxxxx"
-.\download-github-folder.ps1 -Url "https://github.com/owner/repo/tree/main/path"
-
-# 或直接傳入 Token
-.\download-github-folder.ps1 -Url "..." -Token "ghp_xxxxxxxxxxxx"
+# 私有倉庫（直接傳入 Token）
+pwsh -NoProfile -ExecutionPolicy Bypass -File "c:\Dinoin\workspace\ai_skills\.github\skills\github-folder-downloader\scripts\download-github-folder.ps1" `
+     -Url "https://github.com/owner/repo/tree/main/path" `
+     -Token "ghp_xxxxxxxxxxxx"
 ```
+
+> **重要**：輸出目錄 (`-OutputDir`) 為父目錄，腳本會在其下自動建立以資料夾最末段命名的子目錄（例如 URL 末段為 `docx`，則輸出至 `OutputDir\docx\`），並完整保留內部子目錄結構。
 
 ### 步驟三：驗證結果
 下載完成後確認：

@@ -64,14 +64,15 @@ function New-GitHubHeaders {
     return $h
 }
 
-# ── 遞迴取得並平鋪下載所有檔案（所有子目錄的檔案皆直接放入 OutputDir）────
+# ── 遞迴取得並下載所有檔案（完整保留子目錄結構）────────────────────────────
 function Invoke-DownloadFolder {
     param(
         [string]$Owner,
         [string]$Repo,
         [string]$Branch,
         [string]$FolderPath,   # 在 repo 中的路徑
-        [string]$OutputDir,    # 所有檔案的目標目錄（平鋪，不建立內層子目錄）
+        [string]$BasePath,     # 原始請求的起始路徑（用於計算相對路徑）
+        [string]$OutputDir,    # 本地輸出根目錄
         [hashtable]$Headers
     )
 
@@ -96,8 +97,17 @@ function Invoke-DownloadFolder {
 
     foreach ($item in $items) {
         if ($item.type -eq 'file') {
-            # 平鋪：只取檔案名稱，不重建子目錄結構
-            $localPath = Join-Path $OutputDir $item.name
+            # 計算相對於起始路徑的相對路徑，重建目錄結構
+            $relativePath = if ($BasePath) {
+                $item.path.Substring($BasePath.Length).TrimStart('/')
+            } else {
+                $item.path
+            }
+            $localPath = Join-Path $OutputDir $relativePath
+            $localDir  = Split-Path $localPath -Parent
+            if (-not (Test-Path $localDir)) {
+                New-Item -ItemType Directory -Path $localDir -Force | Out-Null
+            }
 
             Write-Host "  下載：$($item.path)" -ForegroundColor Cyan
             try {
@@ -108,12 +118,13 @@ function Invoke-DownloadFolder {
             }
         }
         elseif ($item.type -eq 'dir') {
-            # 遞迴子目錄，但輸出目錄不變（維持平鋪）
+            # 遞迴子目錄，傳入相同的 BasePath 與 OutputDir（保留結構）
             Invoke-DownloadFolder `
                 -Owner      $Owner `
                 -Repo       $Repo `
                 -Branch     $Branch `
                 -FolderPath $item.path `
+                -BasePath   $BasePath `
                 -OutputDir  $OutputDir `
                 -Headers    $Headers
         }
@@ -147,6 +158,7 @@ Invoke-DownloadFolder `
     -Repo       $parsed.Repo `
     -Branch     $parsed.Branch `
     -FolderPath $parsed.Path `
+    -BasePath   $parsed.Path `
     -OutputDir  $finalOutputDir `
     -Headers    $headers
 
