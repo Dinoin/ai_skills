@@ -2,6 +2,31 @@
 
 存放通用型的 skill 檔。
 
+## 自動同步機制
+
+每次執行 `git push` 後，git `post-push` hook 會自動呼叫 `sync-skills.bat`，將根目錄層的所有 skill 資料夾（排除 `.github`、`.git`）同步至：
+
+```
+C:\Users\Dinoin_Chen\.copilot\skills\
+```
+
+**同步範圍**
+
+| 來源（ai_skills 根目錄）| 目標 |
+|---|---|
+| `pdf/` | `C:\Users\Dinoin_Chen\.copilot\skills\pdf\` |
+| 未來新增的 `<skill>/` | `C:\Users\Dinoin_Chen\.copilot\skills\<skill>\` |
+
+> `.github/` 和 `.git/` 資料夾不在同步範圍內。
+
+**手動同步**
+
+```bat
+sync-skills.bat
+```
+
+---
+
 ## 本專案用 Skills
 
 ### `github-folder-downloader`
