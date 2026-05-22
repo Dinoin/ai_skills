@@ -4,23 +4,59 @@
 
 ## 自動同步機制
 
-每次執行 `git push` 後，git `post-push` hook 會自動呼叫 `sync-skills.bat`，將根目錄層的所有 skill 資料夾（排除 `.github`、`.git`）同步至目標資料夾。
-設置於 `.git/hooks/pre-push` 中。
+每次執行 `git push` 前，git `pre-push` hook 會自動呼叫同步腳本，將根目錄層的所有 skill 資料夾（排除 `.github`、`.git`）同步至 Copilot skills 目錄。
 
+### Git Hook 配置
+- **檔案位置**: `.git/hooks/pre-push`
+- **觸發時機**: 每次執行 `git push` 時自動執行
+- **功能**: 自動同步 skills，確保本地專案與 Copilot skills 資料夾保持一致
+
+#### Windows `.git/hooks/pre-push` EX：
+```sh
+#!/bin/sh
+
+# 執行 skills 同步批次檔
+echo "Syncing skills files before push..."
+cmd.exe /c "C:/Dinoin/workspace/ai_skills/sync-skills.bat"
+
+# 不管前面發生什麼，都強制讓 git 指令繼續
+exit 0
+```
+
+#### macOS `.git/hooks/pre-push` EX：
+```sh
+#!/bin/sh
+
+# 執行 skills 同步腳本
+echo "Syncing skills files before push..."
+sh /Users/dinoin/workspace/ai_skills/sync-skills.sh
+
+# 不管前面發生什麼，都強制讓 git 指令繼續
+exit 0
+```
+要記得設定執行權限：`chmod +x .git/hooks/pre-push`
+
+---
 
 **同步範圍**
 
-| 來源（ai_skills 根目錄）| 目標 |
-|---|---|
-| `pdf/` | `C:\Users\Dinoin_Chen\.copilot\skills\pdf\` |
-| 未來新增的 `<skill>/` | `C:\Users\Dinoin_Chen\.copilot\skills\<skill>\` |
+| 來源（ai_skills 根目錄）| Windows 目標 | macOS 目標 |
+|---|---|---|
+| `pdf/` | `C:\Users\Dinoin_Chen\.copilot\skills\pdf\` | `~/.copilot/skills/pdf/` |
+| 未來新增的 `<skill>/` | `C:\Users\Dinoin_Chen\.copilot\skills\<skill>\` | `~/.copilot/skills/<skill>/` |
 
 > `.github/` 和 `.git/` 資料夾不在同步範圍內。
 
-**手動同步**
+### Windows（手動同步）
 
 ```bat
 sync-skills.bat
+```
+
+### macOS（手動同步）
+
+```bash
+./sync-skills.sh
 ```
 
 ---
